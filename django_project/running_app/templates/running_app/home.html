@@ -4,10 +4,14 @@
 {% load static %}
 <style>
     .event_state_img {
-        height: auto; /* Beibehaltung des Seitenverhältnisses */
-        max-width: 100%; /* Bild passt sich der Card-Breite an */
-        object-fit: cover; /* Sorgt dafür, dass das Bild innerhalb der Card bleibt */
-        border-radius: 5px; /* Optional: abgerundete Ecken */
+        height: auto;
+        /* Beibehaltung des Seitenverhältnisses */
+        max-width: 100%;
+        /* Bild passt sich der Card-Breite an */
+        object-fit: cover;
+        /* Sorgt dafür, dass das Bild innerhalb der Card bleibt */
+        border-radius: 5px;
+        /* Optional: abgerundete Ecken */
     }
 
     .hero {
@@ -41,22 +45,6 @@
         font-size: 1.2rem;
     }
 
-     /* Drei verschiedene Hintergrundfarben */
-     .event-box-blue {
-        background-color: #eed96e;
-        color: white;
-    }
-
-    .event-box-green {
-        background-color: #c98474;
-        color: white;
-    }
-
-    .event-box-orange {
-        background-color: #874C62;
-        color: white;
-    }
-
     /* Styling für die Monatsnavigation */
     #month-nav {
         position: sticky;
@@ -77,19 +65,6 @@
         /* Markiert den aktiven Monat */
     }
 
-    .event-box {
-        border: 1px solid #dee2e6;
-        border-radius: 10px;
-        width: 100%;
-        /* Volle Breite */
-        display: flex;
-        flex-direction: column;
-        justify-content: space-between;
-    }
-
-    .event-box .btn:hover {
-        background-color: #28a745;
-    }
 </style>
 
 <div class="container mt-5"></div>
@@ -114,13 +89,13 @@
 <!-- ToDo: https://kau-boys.de/4664/webentwicklung/cluster-markers-by-state-on-a-leaflet-map-->
 
 <div class="row justify-content-center">
-    <div id="map" style="height: 500px; width: 500px;"></div> <!-- Höhe der Karte anpassen -->
+    <div class="map" id="map" style="height: 500px; max-width: 75%;"></div> 
 </div>
 
 <div class="container mt-5">
     <div class="row">
         <!-- Linke Leiste mit den Monaten -->
-        <div class="col-md-2">
+        <div class="col-md-3">
             <div id="month-nav" class="sticky-top">
                 <ul>
                     {% for month in events_by_month.keys %}
@@ -133,22 +108,22 @@
         </div>
 
         <!-- Hauptinhalt mit den Events -->
-        <div class="col-md-6">
+        <div class="col-md-8">
             {% for month, events in events_by_month.items %}
             <h2 id="month-{{ month }}" class="mt-4">{{ month }}</h2>
             <div class="d-flex flex-column">
                 {% for event in events %}
-                <a href="{% url 'event_detail' event.id %}" class="list-group-item list-group-item-action active"
-                    aria-current="true">
                     <div class="event-box mb-2 p-2 {% cycle 'event-box-blue' 'event-box-green' 'event-box-orange' %}">
+                        <a href="{% url 'event_detail' event.id %}" class="list-group-item list-group-item-action active"
+                        aria-current="true">
                         <h3>{{ event.name }}</h3>
                         <div class="row">
                             <div class="col">
                                 <p><strong>Datum:</strong> {{ event.date|date:"d.m.Y" }}</p>
                             </div>
                             <div class="col">
-                                <p style="display:inline-block"><strong>Bundesland: {{event.state}}</strong></p>
-                                        <img src="{% static 'images/'%}{{event.state}}.svg" style="width:10%" />
+                                <p style="display:inline-block"><strong>Bundesland: </strong>{{event.state}}</p>
+                                <img src="{% static 'images/'%}{{event.state}}.svg" style="width:10%" />
                             </div>
                         </div>
                         <div class="row">
@@ -156,7 +131,12 @@
                                 <p><strong>Ort:</strong> {{ event.city }}</p>
                             </div>
                             <div class="col">
-                                <p><strong>Strecken:</strong> {{ event.state }}</p>
+                                <p><strong>Strecken:</strong>
+                                    {% for d in event.distance.all %}
+                                    {{d.name}}{% if not forloop.last %},
+                                    {% endif %}
+                                    {% endfor %}
+                                </p>
                             </div>
                         </div>
                 </a>
@@ -167,6 +147,7 @@
     </div>
 </div>
 </div>
+
 
 <script>
     // JavaScript zum Hervorheben des aktuellen Monats beim Scrollen
@@ -212,7 +193,7 @@
 
     const events = JSON.parse(document.getElementById('data').textContent);
 
-    var markers_bound = events.map(event => 
+    var markers_bound = events.map(event =>
         L.latLng(event.latitude, event.longitude))
     markers_bound = L.latLngBounds(markers_bound);
 

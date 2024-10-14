@@ -27,11 +27,11 @@ def home(request):
 
     distances = [list(e.distance.all().values_list('name', flat =True)) for e in all_events]
 
-    # [d.distance for d in e.distance.all() for e in events]
-
     data = list(all_events.values('city', 'state', 'name', 'date', 'latitude', 'longitude', 'id'))
     # return render(request, 'running_app/events_list.html', {'events_by_month': events_by_month, 'form': form, 'data': data})
-    return render(request, 'running_app/home.html', {'events_by_month': events_by_month, 'form': form, 'data': data})
+    return render(request, 'running_app/home.html', 
+                  {'events_by_month': events_by_month, 'form': form, 
+                   'data': data})
 
 
 def all_event_list(request):
