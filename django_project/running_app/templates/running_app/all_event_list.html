@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+
+{% block title %}Alle Events{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h1>Alle Events</h1>
+    
+    {% if events_by_month %}
+        {% for month, events in events_by_month.items %}
+            <h3>{{ month }}</h3>
+            <div class="row">
+                {% for event in events %}
+                <div class="col-md-4">
+                    <div class="card mb-4">
+                        <img src="path/to/event_image.jpg" class="card-img-top" alt="{{ event.name }}">
+                        <div class="card-body">
+                            <h5 class="card-title">{{ event.name }}</h5>
+                            <p class="card-text">{{ event.description|truncatewords:20 }}</p>
+                            <p><strong>Ort:</strong> {{ event.location }}</p>
+                            <p><strong>Datum:</strong> {{ event.date }}</p>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        {% endfor %}
+    {% else %}
+        <p>Keine Veranstaltungen verfügbar.</p>
+    {% endif %}
+</div>
+{% endblock %}

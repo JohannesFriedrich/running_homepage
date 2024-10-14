@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+
+{% block title %}Event hinzufügen{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h1>Event hinzufügen</h1>
+    <form method="post" action="{% url 'submit_event' %}">
+        {% csrf_token %}
+        <div class="mb-3">
+            <label for="event_name" class="form-label">Event Name</label>
+            <input type="text" class="form-control" id="event_name" name="name" required>
+        </div>
+        <div class="mb-3">
+            <label for="event_date" class="form-label">Datum</label>
+            <input type="date" class="form-control" id="event_date" name="date" required>
+        </div>
+        <div class="mb-3">
+            <label for="event_location" class="form-label">Ort</label>
+            <input type="text" class="form-control" id="event_location" name="location" required>
+        </div>
+        <div class="mb-3">
+            <label for="event_url" class="form-label">URL</label>
+            <input type="url" class="form-control" id="event_url" name="url" required>
+        </div>
+        <div class="mb-3">
+            <label for="event_submitter" class="form-label">Ihre Email-Adresse</label>
+            <input type="url" class="form-control" id="submitter_email" name="email" required>
+        </div>
+        <button type="submit" class="btn btn-primary">Event senden</button>
+    </form>
+</div>
+{% endblock %}

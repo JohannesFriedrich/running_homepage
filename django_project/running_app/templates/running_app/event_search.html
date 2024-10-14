@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+
+{% block title %}Suchergebnisse{% endblock %}
+
+{% block content %}
+
+<div class="row justify-content-center">
+    <div id="map" style="height: 500px; width: 500px;"></div> <!-- Höhe der Karte anpassen -->
+</div>
+
+<div class="container mt-5"></div>
+
+<div class="container mt-5">
+    <h1>Suchergebnisse für "{{ query }}"</h1>
+
+    {% if results %}
+        <div class="row">
+            {% for event in results %}
+            <div class="col-md-3 col-sm-6">
+                <div class="card mb-3" style="min-height: 300px;">
+                    <img src="path/to/event_image.jpg" class="card-img-top" alt="{{ event.name }}" style="height: 150px; object-fit: cover;">
+                    <div class="card-body">
+                        <h5 class="card-title" style="font-size: 1rem;">{{ event.name }}</h5>
+                        <p class="card-text" style="font-size: 0.9rem;">{{ event.description|truncatewords:10 }}</p>
+                        <p><strong>Ort:</strong> {{ event.city }}</p>
+                        <p><strong>Datum:</strong> {{ event.date }}</p>
+                        <a href="{% url 'event_detail' event.id %}" class="btn btn-sm btn-primary">Mehr erfahren</a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p>Keine Ergebnisse gefunden.</p>
+    {% endif %}
+</div>
+
+
+<!-- map -->
+{{ data|json_script:"data" }}
+
+<!-- https://stackoverflow.com/questions/16845614/zoom-to-fit-all-markers-in-mapbox-or-leaflet -->
+
+<script>
+
+    const events = JSON.parse(document.getElementById('data').textContent);
+
+    function formatDate(dateString) {
+        // Datumsteile aus dem Input im Format YYYY-mm-dd extrahieren
+        const [year, month, day] = dateString.split('-');
+        
+        // Das neue Format dd.mm.YYYY zurückgeben
+        return `${day}.${month}.${year}`;
+    }
+
+    var markers_bound = events.map(event => 
+        L.latLng(event.latitude, event.longitude))
+    markers_bound = L.latLngBounds(markers_bound);
+
+    // 1. Initialisiere die Karte auf die gefunden Ergebnisse
+    var map = L.map('map').fitBounds(markers_bound); 
+    
+    // 2. OpenStreetMap Tile-Layer hinzufügen
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+    }).addTo(map);
+
+
+    // 3. Markierungen für Events hinzufügen
+    const markers = L.markerClusterGroup();
+
+    events.map(event => {
+        let marker = L.marker( [ event.latitude, event.longitude ] )
+        .bindPopup(
+            "<b><a href='/event/"+event.id+"/'\>"+event.name+"</a></b>"+
+            "<br>"+event.city+"<br>"+formatDate(event.date)+"<br>" 
+        )
+        .openPopup();
+        markers.addLayer(marker);
+    } );
+    markers.addTo(map);
+
+</script>
+{% endblock %}
+

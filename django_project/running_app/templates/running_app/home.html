@@ -1,0 +1,244 @@
+{% extends 'base.html' %}
+{% block title %}Laufevents in Deutschland{% endblock %}
+{% block content %}
+{% load static %}
+<style>
+    .event_state_img {
+        height: auto; /* Beibehaltung des Seitenverhältnisses */
+        max-width: 100%; /* Bild passt sich der Card-Breite an */
+        object-fit: cover; /* Sorgt dafür, dass das Bild innerhalb der Card bleibt */
+        border-radius: 5px; /* Optional: abgerundete Ecken */
+    }
+
+    .hero {
+        color: #ffe000;
+        position: relative;
+        height: 50vh;
+        background-size: cover;
+        background-position: center;
+        background-repeat: repeat;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        top: 0;
+        text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.7);
+
+    }
+
+    .hero h1 {
+        font-size: 3rem;
+        font-weight: bold;
+    }
+
+    .hero p {
+        font-size: 1.5rem;
+    }
+
+    .hero a {
+        margin-top: 20px;
+        padding: 10px 20px;
+        font-size: 1.2rem;
+    }
+
+     /* Drei verschiedene Hintergrundfarben */
+     .event-box-blue {
+        background-color: #eed96e;
+        color: white;
+    }
+
+    .event-box-green {
+        background-color: #c98474;
+        color: white;
+    }
+
+    .event-box-orange {
+        background-color: #874C62;
+        color: white;
+    }
+
+    /* Styling für die Monatsnavigation */
+    #month-nav {
+        position: sticky;
+        top: 70px;
+        /* Abstand von der Oberseite */
+    }
+
+    .month-link {
+        display: block;
+        padding: 10px 0;
+        font-weight: bold;
+        color: #333;
+        text-decoration: none;
+    }
+
+    .month-link.active {
+        color: #007bff;
+        /* Markiert den aktiven Monat */
+    }
+
+    .event-box {
+        border: 1px solid #dee2e6;
+        border-radius: 10px;
+        width: 100%;
+        /* Volle Breite */
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+    }
+
+    .event-box .btn:hover {
+        background-color: #28a745;
+    }
+</style>
+
+<div class="container mt-5"></div>
+
+<div class="hero">
+    <div class="container text-center">
+        <h1>Finde deinen nächsten Lauf</h1>
+        <p>Laufveranstaltungen in deiner Nähe</p>
+        <div class="container mt-5"></div>
+        <div class="row justify-content-center">
+            <div class="search-bar col-md-5">
+                <form method="GET" action="{% url 'event_search' %}" class="d-flex justify-content-center">
+                    <input type="text" name="query" class="form-control form-control-lg"
+                        placeholder="Suche nach Veranstaltung oder Ort" aria-label="Search">
+                    <button class="btn btn-primary ml-2" type="submit">Suchen</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ToDo: https://kau-boys.de/4664/webentwicklung/cluster-markers-by-state-on-a-leaflet-map-->
+
+<div class="row justify-content-center">
+    <div id="map" style="height: 500px; width: 500px;"></div> <!-- Höhe der Karte anpassen -->
+</div>
+
+<div class="container mt-5">
+    <div class="row">
+        <!-- Linke Leiste mit den Monaten -->
+        <div class="col-md-2">
+            <div id="month-nav" class="sticky-top">
+                <ul>
+                    {% for month in events_by_month.keys %}
+                    <li>
+                        <a href="#month-{{ month }}" class="month-link">{{ month }}</a>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+
+        <!-- Hauptinhalt mit den Events -->
+        <div class="col-md-6">
+            {% for month, events in events_by_month.items %}
+            <h2 id="month-{{ month }}" class="mt-4">{{ month }}</h2>
+            <div class="d-flex flex-column">
+                {% for event in events %}
+                <a href="{% url 'event_detail' event.id %}" class="list-group-item list-group-item-action active"
+                    aria-current="true">
+                    <div class="event-box mb-2 p-2 {% cycle 'event-box-blue' 'event-box-green' 'event-box-orange' %}">
+                        <h3>{{ event.name }}</h3>
+                        <div class="row">
+                            <div class="col">
+                                <p><strong>Datum:</strong> {{ event.date|date:"d.m.Y" }}</p>
+                            </div>
+                            <div class="col">
+                                <p style="display:inline-block"><strong>Bundesland: {{event.state}}</strong></p>
+                                        <img src="{% static 'images/'%}{{event.state}}.svg" style="width:10%" />
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col">
+                                <p><strong>Ort:</strong> {{ event.city }}</p>
+                            </div>
+                            <div class="col">
+                                <p><strong>Strecken:</strong> {{ event.state }}</p>
+                            </div>
+                        </div>
+                </a>
+            </div>
+            {% endfor %}
+        </div>
+        {% endfor %}
+    </div>
+</div>
+</div>
+
+<script>
+    // JavaScript zum Hervorheben des aktuellen Monats beim Scrollen
+    document.addEventListener('DOMContentLoaded', function () {
+        const months = document.querySelectorAll('.month-link');
+        const sections = document.querySelectorAll('h2[id^="month-"]');
+
+        window.addEventListener('scroll', function () {
+            let current = "";
+
+            sections.forEach(section => {
+                const sectionTop = section.offsetTop;
+                const sectionHeight = section.clientHeight;
+                if (pageYOffset >= sectionTop - sectionHeight / 2) {
+                    current = section.getAttribute('id');
+                }
+            });
+
+            months.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === '#' + current) {
+                    link.classList.add('active');
+                }
+            });
+        });
+    });
+</script>
+
+
+<!-- map -->
+{{ data|json_script:"data" }}
+{% comment %} {{ distances|json_script:"distances" }} {% endcomment %}
+
+
+<script>
+    function formatDate(dateString) {
+        // Datumsteile aus dem Input im Format YYYY-mm-dd extrahieren
+        const [year, month, day] = dateString.split('-');
+
+        // Das neue Format dd.mm.YYYY zurückgeben
+        return `${day}.${month}.${year}`;
+    }
+
+    const events = JSON.parse(document.getElementById('data').textContent);
+
+    var markers_bound = events.map(event => 
+        L.latLng(event.latitude, event.longitude))
+    markers_bound = L.latLngBounds(markers_bound);
+
+    // 1. Initialisiere die Karte
+    // var map = L.map('map').fitBounds(markers_bound,{padding: [0,0]}); 
+
+    // 1. Initialisiere die Karte
+    var map = L.map('map').setView([51.16, 10.45], 6); // Startkoordinaten Mitte Deutschlands
+
+    // 2. OpenStreetMap Tile-Layer hinzufügen
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+    }).addTo(map);
+
+    // 3. Markierungen für Events hinzufügen
+    const markers = L.markerClusterGroup();
+
+    events.map(event => {
+        let popup_content = "<b><a href=\x27/event/" + event.id + "\x27>" + event.name + "</a></b><br>" + event.city + "<br>" + formatDate(event.date) + "<br>"
+            + event.distance;
+        let marker = L.marker([event.latitude, event.longitude])
+            .bindPopup(popup_content)
+            .openPopup();
+        markers.addLayer(marker);
+    });
+    markers.addTo(map);
+
+</script>
+{% endblock %}

@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+
+{% block title %}Event Details{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h1>{{ event.name }}</h1>
+    <div class="row">
+        <div class="col-md-8">
+            <img src= {{event.image_url}} class="img-fluid mb-4" alt="{{ event.name }}">
+            <p><strong>Ort:</strong> {{ event.location }}</p>
+            <p><strong>Datum:</strong> {{ event.date }}</p>
+            <p><strong>Beschreibung:</strong> {{ event.description }}</p>
+        </div>
+        <div class="col-md-4">
+            <!-- Karte wird hier eingebettet -->
+            <div id="map" style="width: 100%; height: 300px;"></div>
+        </div>
+    </div>
+        <div class="col-md-4">
+            <a href="{{ event.url }}" class="btn btn-primary mb-3" target="_blank">Zur Event-Seite</a>
+            <a href="{% url 'event_list' %}" class="btn btn-primary mb-3">Zurück zu den Events</a>
+        </div>
+</div>
+
+{{ data|json_script:"data" }}
+
+<script>
+    const event = JSON.parse(document.getElementById('data').textContent);
+
+    // 1. Initialisiere die Karte
+    var map = L.map('map').setView([parseFloat(event.latitude), parseFloat(event.longitude)], 9);
+
+    // 2. OpenStreetMap Tile-Layer hinzufügen
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+    }).addTo(map);
+
+
+    // 3. Markierungen für Events hinzufügen
+    L.marker( [ parseFloat(event.latitude), parseFloat(event.longitude)], { title: event.name, riseOnHover:true } )
+        .bindPopup("<b>"+event.name+"</b><br>"+event.city+"<br>"+event.date)
+        .openPopup()
+        .addTo(map);
+
+</script>
+{% endblock %}

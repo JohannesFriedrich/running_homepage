@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="de">
+{% load static %}
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Sport Events{% endblock %}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Leaflet.js CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+    <!-- Leaflet.js JS -->
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    <!-- MarkerCluster.js CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css"
+        integrity="sha256-YU3qCpj/P06tdPBJGPax0bm6Q1wltfwjsho5TR4+TYc=" crossorigin="" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css"
+        integrity="sha256-YSWCMtmNZNwqex4CEw1nQhvFub2lmU7vcCKP+XVwwXA=" crossorigin="" />
+    <!-- MarkerCluster.js JS -->
+    <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"
+        integrity="sha256-Hk4dIpcqOSb0hZjgyvFOP+cEmDXUKKNE/tT542ZbNQg=" crossorigin="">
+        </script>
+    <style>
+        .navbar {
+            background-color: #343a40;
+            position: fixed;
+            top: 0;
+            width: 100%;
+            z-index: 1030;
+        }
+
+        body {
+            background-image: url("{% static 'images/background.jpg' %}");
+            background-color: #cfcfcf;
+            background-size: cover;
+            background-attachment:fixed;
+            background-position:center bottom;
+            background-repeat: no-repeat;
+            color: #343a40;
+            /* Platz für die fixierte Navbar */
+            padding: 0;
+            padding-top: 50px;
+        }
+    </style>
+
+</head>
+
+<body>
+
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark "> <!-- fixed-top-->
+        <div class="container-fluid">
+            <a class="navbar-brand mb-0 h1" href="{% url 'home' %}">Sport Events</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+                aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'home' %}">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'all_event_list' %}">Alle Events</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" data-bs-toggle="modal"
+                            data-bs-target="#submitEventModal">Laufveranstaltung einreichen</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hauptinhalt -->
+    <!-- <div class="container mt-5"> -->
+    {% block content %}
+    <!-- Der individuelle Inhalt jeder Seite wird hier eingefügt -->
+    {% endblock %}
+    <!-- </div> -->
+
+    <!-- Event hinzufügen Modal -->
+    <div class="modal fade" id="submitEventModal" tabindex="-1" aria-labelledby="submitEventModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="submitEventModalLabel">Event hinzufügen</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form method="post" action="{% url 'submit_event' %}">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label for="event_name" class="form-label">Event Name</label>
+                            <input type="text" class="form-control" id="event_name" name="name" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="event_date" class="form-label">Datum</label>
+                            <input type="date" class="form-control" id="event_date" name="date" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="event_location" class="form-label">Ort</label>
+                            <input type="text" class="form-control" id="event_location" name="location" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="event_url" class="form-label">URL</label>
+                            <input type="url" class="form-control" id="event_url" name="url">
+                        </div>
+                        <button type="submit" class="btn btn-primary">Event senden</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="text-center mt-5 py-4 bg-light">
+        <div class="container">
+            <p>&copy; 2024 Johannes Friedrich. Alle Rechte vorbehalten.</p>
+        </div>
+    </footer>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+
+</html>
