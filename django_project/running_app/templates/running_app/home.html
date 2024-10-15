@@ -64,7 +64,6 @@
         color: #007bff;
         /* Markiert den aktiven Monat */
     }
-
 </style>
 
 <div class="container mt-5"></div>
@@ -89,13 +88,13 @@
 <!-- ToDo: https://kau-boys.de/4664/webentwicklung/cluster-markers-by-state-on-a-leaflet-map-->
 
 <div class="row justify-content-center">
-    <div class="map" id="map" style="height: 500px; max-width: 75%;"></div> 
+    <div class="map" id="map" style="height: 500px; max-width: 70%;"></div>
 </div>
 
 <div class="container mt-5">
     <div class="row">
         <!-- Linke Leiste mit den Monaten -->
-        <div class="col-md-3">
+        <div class="col-md-3 mt-5">
             <div id="month-nav" class="sticky-top">
                 <ul>
                     {% for month in events_by_month.keys %}
@@ -108,29 +107,19 @@
         </div>
 
         <!-- Hauptinhalt mit den Events -->
-        <div class="col-md-8">
+        <div class="col-sm-8">
             {% for month, events in events_by_month.items %}
             <h2 id="month-{{ month }}" class="mt-4">{{ month }}</h2>
-            <div class="d-flex flex-column">
+            <div class="row">
                 {% for event in events %}
-                    <div class="event-box mb-2 p-2 {% cycle 'event-box-blue' 'event-box-green' 'event-box-orange' %}">
-                        <a href="{% url 'event_detail' event.id %}" class="list-group-item list-group-item-action active"
-                        aria-current="true">
-                        <h3>{{ event.name }}</h3>
-                        <div class="row">
-                            <div class="col">
+                <div class="col-lg-4 d-flex align-items-stretch mb-3">
+                    <div class="card h-100 {% cycle 'event-box-green' 'event-box-red' 'event-box-purple' 'event-box-orange'%}">
+                        <a href="{% url 'event_detail' event.id %}"
+                             class="list-group-item list-group-item-action active" aria-current="true">
+                            <h3 class="card-header d-flex">{{ event.name }}</h3>
+                            <div class="card-body flex-column">
                                 <p><strong>Datum:</strong> {{ event.date|date:"d.m.Y" }}</p>
-                            </div>
-                            <div class="col">
-                                <p style="display:inline-block"><strong>Bundesland: </strong>{{event.state}}</p>
-                                <img src="{% static 'images/'%}{{event.state}}.svg" style="width:10%" />
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col">
-                                <p><strong>Ort:</strong> {{ event.city }}</p>
-                            </div>
-                            <div class="col">
+                                <p><strong>Ort:</strong> {{ event.postal_code }} {{ event.city }}</p>
                                 <p><strong>Strecken:</strong>
                                     {% for d in event.distance.all %}
                                     {{d.name}}{% if not forloop.last %},
@@ -138,14 +127,14 @@
                                     {% endfor %}
                                 </p>
                             </div>
-                        </div>
-                </a>
+                        </a>
+                    </div>
+                </div>
+                {% endfor %}
             </div>
             {% endfor %}
         </div>
-        {% endfor %}
     </div>
-</div>
 </div>
 
 
