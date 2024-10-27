@@ -7,7 +7,6 @@
     <div class="row">
         <div class="col-lg-6">
             <div class="card mb-2 p-2 event-box-red">
-                <!-- <img src= {{event.image_url}} class="img-fluid mb-4" alt="{{ event.name }}"> -->
                 <h3 class="card-header d-flex">{{ event.name }}</h3>
                 <div class="card-body flex-column">
                     <p><strong>Ort: </strong>{{ event.postal_code }} {{ event.city }}</p>
@@ -42,10 +41,18 @@
 {{ data|json_script:"data" }}
 
 <script>
-    const event = JSON.parse(document.getElementById('data').textContent);
+    function formatDate(dateString) {
+        // Datumsteile aus dem Input im Format YYYY-mm-dd extrahieren
+        const [year, month, day] = dateString.split('-');
+
+        // Das neue Format dd.mm.YYYY zurückgeben
+        return `${day}.${month}.${year}`;
+    }
+
+    const data = JSON.parse(document.getElementById('data').textContent);
 
     // 1. Initialisiere die Karte
-    var map = L.map('map').setView([parseFloat(event.latitude), parseFloat(event.longitude)], 9);
+    var map = L.map('map').setView([parseFloat(data.latitude), parseFloat(data.longitude)], 9);
 
     // 2. OpenStreetMap Tile-Layer hinzufügen
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -53,9 +60,9 @@
     }).addTo(map);
 
 
-    // 3. Markierungen für Events hinzufügen
-    L.marker([parseFloat(event.latitude), parseFloat(event.longitude)], { title: event.name, riseOnHover: true })
-        .bindPopup("<b>" + event.name + "</b><br>" + event.city + "<br>" + event.date)
+    // 3. Markierungen für datas hinzufügen
+    L.marker([parseFloat(data.latitude), parseFloat(data.longitude)], { title: data.name, riseOnHover: true })
+        .bindPopup("<b>" + data.name + "</b><br>" + data.city + "<br>" + formatDate(data.date) + "<br>" + data.distance)
         .openPopup()
         .addTo(map);
 

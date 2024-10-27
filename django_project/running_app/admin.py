@@ -1,9 +1,13 @@
 from django.contrib import admin
 from .models import RunningEvent
 from .models import Distance
+from .models import Source
 
 class RunningEventAdmin(admin.ModelAdmin):
-    list_display = ('date', 'name', 'city', 'state', 'distances', 'latitude', 'longitude')
+    list_display = (
+        'date', 'name', 'city', 'state', 
+        'distances', 'latitude', 'longitude',
+        'source', 'created_at')
 
     def distances(self, obj):
         return "\n".join([str(d.distance) for d in obj.distance.all()])
@@ -20,7 +24,11 @@ class RunningEventAdmin(admin.ModelAdmin):
 class DistanceAdmin(admin.ModelAdmin):
     pass
 
+class SourceAdmin(admin.ModelAdmin):
+    pass
+
 
 admin.site.register(RunningEvent, RunningEventAdmin)
 admin.site.register(Distance, DistanceAdmin)
+admin.site.register(Source, SourceAdmin)
 

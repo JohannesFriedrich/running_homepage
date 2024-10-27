@@ -4,34 +4,46 @@
 
 {% block content %}
 
-<div class="row justify-content-center">
-    <div id="map" style="height: 500px; width: 500px;"></div> <!-- Höhe der Karte anpassen -->
-</div>
-
 <div class="container mt-5"></div>
 
 <div class="container mt-5">
     <h1>Suchergebnisse für "{{ query }}"</h1>
 
     {% if results %}
-        <div class="row">
+    <!-- <div class="row"> -->
+    <div class="col-lg-6">
+        <div class="container">
             {% for event in results %}
-            <div class="col-md-3 col-sm-6">
-                <div class="card mb-3" style="min-height: 300px;">
-                    <img src="path/to/event_image.jpg" class="card-img-top" alt="{{ event.name }}" style="height: 150px; object-fit: cover;">
-                    <div class="card-body">
-                        <h5 class="card-title" style="font-size: 1rem;">{{ event.name }}</h5>
-                        <p class="card-text" style="font-size: 0.9rem;">{{ event.description|truncatewords:10 }}</p>
-                        <p><strong>Ort:</strong> {{ event.city }}</p>
-                        <p><strong>Datum:</strong> {{ event.date }}</p>
-                        <a href="{% url 'event_detail' event.id %}" class="btn btn-sm btn-primary">Mehr erfahren</a>
+            <!-- <div class="row"> -->
+                <div class="col-lg-3">
+                    <div
+                        class="card h-100 {% cycle 'event-box-green' 'event-box-red' 'event-box-purple' 'event-box-orange'%}">
+                        <a href="{% url 'event_detail' event.id %}"
+                            class="list-group-item list-group-item-action active" aria-current="true">
+                            <h3 class="card-header d-flex">{{ event.name }}</h3>
+                            <div class="card-body flex-column">
+                                <p><strong>Datum:</strong> {{ event.date|date:"d.m.Y" }}</p>
+                                <p><strong>Ort:</strong> {{ event.postal_code }} {{ event.city }} ({{event.state}})</p>
+                                <p><strong>Strecken:</strong>
+                                    {% for d in event.distance.all %}
+                                    {{d.name}}{% if not forloop.last %},
+                                    {% endif %}
+                                    {% endfor %}
+                                </p>
+                            </div>
+                        </a>
                     </div>
                 </div>
-            </div>
+            <!-- </div> -->
             {% endfor %}
         </div>
+    </div>
+    <div class="col-lg-6 mb-2 sticky-top">
+        <div id="map" style="height: 500px; width: 500px;"></div>
+    </div>
+    <!-- </div> -->
     {% else %}
-        <p>Keine Ergebnisse gefunden.</p>
+    <p>Keine Ergebnisse gefunden.</p>
     {% endif %}
 </div>
 
@@ -48,18 +60,18 @@
     function formatDate(dateString) {
         // Datumsteile aus dem Input im Format YYYY-mm-dd extrahieren
         const [year, month, day] = dateString.split('-');
-        
+
         // Das neue Format dd.mm.YYYY zurückgeben
         return `${day}.${month}.${year}`;
     }
 
-    var markers_bound = events.map(event => 
+    var markers_bound = events.map(event =>
         L.latLng(event.latitude, event.longitude))
     markers_bound = L.latLngBounds(markers_bound);
 
     // 1. Initialisiere die Karte auf die gefunden Ergebnisse
-    var map = L.map('map').fitBounds(markers_bound); 
-    
+    var map = L.map('map').fitBounds(markers_bound);
+
     // 2. OpenStreetMap Tile-Layer hinzufügen
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
@@ -70,16 +82,15 @@
     const markers = L.markerClusterGroup();
 
     events.map(event => {
-        let marker = L.marker( [ event.latitude, event.longitude ] )
-        .bindPopup(
-            "<b><a href='/event/"+event.id+"/'\>"+event.name+"</a></b>"+
-            "<br>"+event.city+"<br>"+formatDate(event.date)+"<br>" 
-        )
-        .openPopup();
+        let marker = L.marker([event.latitude, event.longitude])
+            .bindPopup(
+                "<b><a href='/event/" + event.id + "/'\>" + event.name + "</a></b>" +
+                "<br>" + event.city + "<br>" + formatDate(event.date) + "<br>"
+            )
+            .openPopup();
         markers.addLayer(marker);
-    } );
+    });
     markers.addTo(map);
 
 </script>
 {% endblock %}
-

@@ -1,32 +1,27 @@
 import requests
 from django.db import models
     
-class Distance(models.Model):
-    name = models.CharField(max_length=200, null =True)
-    distance = models.DecimalField(default = None, max_digits=9, decimal_places=3, blank=True)
-
-    def __str__ (self) -> str:
-        return str(self.name)
-    
-    class Meta:
-        ordering = ['distance']  # Standardmäßige Sortierung nach Datum (aufsteigend)
-    
 class RunningEvent(models.Model):
     
     # required fields
     name = models.CharField(max_length=200)
     city = models.CharField(max_length=200) 
-    postal_code = models.CharField(max_length=200)
     date = models.DateField()
 
     # additional fields
+    postal_code = models.CharField(max_length=200, null=True, blank=True)
     state = models.CharField(max_length=200, null=True, blank=True)
     description = models.TextField(null=True, blank=True)
-    distance = models.ManyToManyField(Distance)
+    distance = models.ManyToManyField("Distance", blank=True)
 
     latitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
     longitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
     url = models.URLField(null=True, blank=True)
+    logo = models.URLField(null=True, blank=True)
+    # card_color = models.CharField(max_length=7, null=True, blank=True)
+    type = models.CharField(max_length=200, null=True, blank=True, default="running")
+    source = models.ForeignKey("Source", on_delete=models.CASCADE, null =True, blank =True)
+    created_at = models.DateTimeField(auto_now_add=True, blank=True, null=True)
 
     def get_state_from_zip_code(self):
         try:
@@ -59,8 +54,8 @@ class RunningEvent(models.Model):
     def save(self, *args, **kwargs):
         if not self.latitude or not self.longitude:
             self.latitude, self.longitude = self.get_coordinates()
-        if not self.state:
-            self.state = self.get_state_from_zip_code()
+        # if not self.state:
+        #     self.state = self.get_state_from_zip_code()
         super().save(*args, **kwargs)
 
     
@@ -69,3 +64,20 @@ class RunningEvent(models.Model):
 
     class Meta:
         ordering = ['date']  # Standardmäßige Sortierung nach Datum (aufsteigend)
+
+
+class Distance(models.Model):
+    name = models.CharField(max_length=200, null =True)
+    distance = models.DecimalField(default = None, max_digits=9, decimal_places=3, blank=True)
+
+    def __str__ (self) -> str:
+        return str(self.name)
+    
+    class Meta:
+        ordering = ['distance']  # Standardmäßige Sortierung nach Datum (aufsteigend)
+    
+class Source(models.Model):
+    source = models.CharField(max_length=200, null =True)
+
+    def __str__ (self) -> str:
+        return str(self.source)

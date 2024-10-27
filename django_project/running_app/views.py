@@ -28,10 +28,12 @@ def home(request):
     distances = [list(e.distance.all().values_list('name', flat =True)) for e in all_events]
 
     data = list(all_events.values('city', 'state', 'name', 'date', 'latitude', 'longitude', 'id'))
-    # return render(request, 'running_app/events_list.html', {'events_by_month': events_by_month, 'form': form, 'data': data})
+
     return render(request, 'running_app/home.html', 
-                  {'events_by_month': events_by_month, 'form': form, 
-                   'data': data})
+                  {'events_by_month': events_by_month, 
+                   'form': form, 
+                   'data': data
+                   })
 
 
 def all_event_list(request):
@@ -50,15 +52,25 @@ def all_event_list(request):
     # bug: https://www.dermitch.de/post/django-template-iterate-over-defaultdict/
     events_by_month = dict(events_by_month)
 
-    return render(request, 'running_app/all_event_list.html', {'events_by_month': events_by_month})
+    return render(request, 'running_app/all_event_list.html', 
+                  {'events_by_month': events_by_month})
 
 
 def event_detail(request, id):
     # Holt das spezifische Event basierend auf der ID oder zeigt 404-Fehler an
     event = get_object_or_404(RunningEvent, id=id)
-    data = {"id": id, "city": event.city, "longitude": event.longitude, "latitude": event.latitude}
+
+    data = {
+        "id": id, 
+        "name": event.name,
+        "date": event.date,
+        "distance": ", ".join([str(d.name) for d in event.distance.all()]),
+        "city": event.city, 
+        "longitude": event.longitude, 
+        "latitude": event.latitude}
     
-    return render(request, 'running_app/event_detail.html', {'event': event, 'data':data})
+    return render(request, 'running_app/event_detail.html', 
+                  {'event': event, 'data':data})
 
 
 
@@ -97,10 +109,8 @@ def event_search(request):
     if query:
         # Suche nach Event-Namen oder Ort (Case-Insensitive)
         results = RunningEvent.objects.filter(
-            Q(name__icontains=query) | Q(city__icontains=query)
+            Q(name__icontains=query) | Q(city__icontains=query) | Q(postal_code__icontains=query)
         )
         data = list(results.values('city', 'name','date', 'latitude', 'longitude', 'id'))
-
-
 
     return render(request, 'running_app/event_search.html', {'results': results, 'query': query, 'data':data})
