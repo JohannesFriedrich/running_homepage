@@ -16,23 +16,25 @@ def home(request):
     today = date.today()
     all_events = RunningEvent.objects.filter(date__gte=today).order_by('date')
     events_by_month = defaultdict(list)
+    distances = defaultdict(list)
+
     for event in all_events:
-        month = convert_to_german_month_names(int(event.date.strftime("%-m")))
-        year  = event.date.strftime("%Y")
-        month_year = month + " " + year
+        month: str = convert_to_german_month_names(int(event.date.strftime("%-m")))
+        year: str  = event.date.strftime("%Y")
+        month_year: str = month + " " + year
         events_by_month[month_year].append(event)
+        distances[event.pk].append([d for d in event.distance.all().values_list('name', flat =True)])
 
     # bug: https://www.dermitch.de/post/django-template-iterate-over-defaultdict/
     events_by_month = dict(events_by_month)
-
-    distances = [list(e.distance.all().values_list('name', flat =True)) for e in all_events]
 
     data = list(all_events.values('city', 'state', 'name', 'date', 'latitude', 'longitude', 'id'))
 
     return render(request, 'running_app/home.html', 
                   {'events_by_month': events_by_month, 
                    'form': form, 
-                   'data': data
+                   'data': data,
+                   'distances': distances
                    })
 
 

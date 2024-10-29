@@ -7,7 +7,7 @@ class RunningEventAdmin(admin.ModelAdmin):
     list_display = (
         'date', 'name', 'city', 'state', 
         'distances', 'latitude', 'longitude',
-        'source', 'created_at')
+        'source', 'created_at', 'logo')
 
     def distances(self, obj):
         return "\n".join([str(d.distance) for d in obj.distance.all()])

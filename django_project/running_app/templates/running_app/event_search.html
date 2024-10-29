@@ -10,11 +10,45 @@
     <h1>Suchergebnisse für "{{ query }}"</h1>
 
     {% if results %}
-    <!-- <div class="row"> -->
-    <div class="col-lg-6">
+    <div class="container_">
+        <!-- Linke scrollbare Spalte -->
+        <div class="scrollable-column">
+            <div class="row">
+            {% for event in results %}
+                <div class="col-lg-6 d-flex align-items-stretch mb-3">
+                    <div
+                        class="card h-100 {% cycle 'event-box-green' 'event-box-red' 'event-box-purple' 'event-box-orange'%}">
+                        <a href="{% url 'event_detail' event.id %}"
+                            class="list-group-item list-group-item-action active" aria-current="true">
+                            <h3 class="card-header d-flex">{{ event.name }}</h3>
+                            <div class="card-body flex-column">
+                                <p><strong>Datum:</strong> {{ event.date|date:"d.m.Y" }}</p>
+                                <p><strong>Ort:</strong> {{ event.postal_code }} {{ event.city }} ({{event.state}})</p>
+                                <p><strong>Strecken:</strong>
+                                    {% for d in event.distance.all %}
+                                    {{d.name}}{% if not forloop.last %},
+                                    {% endif %}
+                                    {% endfor %}
+                                </p>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+        </div>
+
+        <!-- Rechte feststehende Spalte mit Bild -->
+        <div class="fixed-column">
+            <div id="map" style="height: 500px; width: 500px;"></div>
+        </div>
+    <!-- </div> -->
+
+    <!-- <div class="flex-column>"> -->
+    <!-- <div class="flex-column-6">
         <div class="container">
             {% for event in results %}
-            <!-- <div class="row"> -->
+            <div class="row">
                 <div class="col-lg-3">
                     <div
                         class="card h-100 {% cycle 'event-box-green' 'event-box-red' 'event-box-purple' 'event-box-orange'%}">
@@ -34,14 +68,14 @@
                         </a>
                     </div>
                 </div>
-            <!-- </div> -->
+            </div>
             {% endfor %}
         </div>
-    </div>
-    <div class="col-lg-6 mb-2 sticky-top">
+    </div> -->
+    <!-- <div class="flex-column-6 mb-2 sticky-top">
         <div id="map" style="height: 500px; width: 500px;"></div>
+    </div> -->
     </div>
-    <!-- </div> -->
     {% else %}
     <p>Keine Ergebnisse gefunden.</p>
     {% endif %}
