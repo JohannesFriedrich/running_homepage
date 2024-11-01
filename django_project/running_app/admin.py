@@ -6,8 +6,8 @@ from .models import Source
 class RunningEventAdmin(admin.ModelAdmin):
     list_display = (
         'date', 'name', 'city', 'state', 
-        'distances', 'latitude', 'longitude',
-        'source', 'created_at', 'logo')
+        'distances', 'type', 'created_at', 'last_change', 
+        'url', 'source', 'latitude', 'longitude')
 
     def distances(self, obj):
         return "\n".join([str(d.distance) for d in obj.distance.all()])
@@ -18,7 +18,7 @@ class RunningEventAdmin(admin.ModelAdmin):
         if not obj.latitude or not obj.longitude:
             obj.latitude, obj.longitude = obj.get_coordinates()
         if not obj.state:
-            obj.state = obj.get_state_from_zip_code()
+            obj.state, obj.postal_code = obj.get_zip_and_state_from_long_lat()
         super().save_model(request, obj, form, change)
 
 class DistanceAdmin(admin.ModelAdmin):

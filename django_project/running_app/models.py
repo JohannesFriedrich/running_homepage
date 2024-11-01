@@ -1,17 +1,18 @@
 import requests
 from django.db import models
+import time
     
 class RunningEvent(models.Model):
     
     # required fields
     name = models.CharField(max_length=200)
-    city = models.CharField(max_length=200) 
     date = models.DateField()
 
     # additional fields
     postal_code = models.CharField(max_length=200, null=True, blank=True)
+    city = models.CharField(max_length=200) 
     state = models.CharField(max_length=200, null=True, blank=True)
-    description = models.TextField(null=True, blank=True)
+    description = models.TextField(null=True, blank=True, default="")
     distance = models.ManyToManyField("Distance", blank=True)
 
     latitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
@@ -22,21 +23,7 @@ class RunningEvent(models.Model):
     type = models.CharField(max_length=200, null=True, blank=True, default="running")
     source = models.ForeignKey("Source", on_delete=models.CASCADE, null =True, blank =True)
     created_at = models.DateTimeField(auto_now_add=True, blank=True, null=True)
-
-    def get_state_from_zip_code(self):
-        try:
-            # API-Anfrage an Zippopotam.us für Deutschland (DE)
-            response = requests.get(f"http://api.zippopotam.us/de/{self.postal_code}")
-            data = response.json()
-            # Überprüfe, ob der Ortsname übereinstimmt
-            for place in data['places']:
-                if place['place name'].lower() == self.city.lower():
-                    # Das Bundesland extrahieren
-                    return place['state']
-            return None
-        except Exception as e:
-            print(f"Fehler beim Abrufen des Bundeslands: {e}")
-            return None
+    last_change = models.DateTimeField(auto_now=True, blank=True, null=True)
         
     def get_coordinates(self):
         """Verwendet die Nominatim API, um Koordinaten aus einer Adresse zu erhalten."""
@@ -49,13 +36,31 @@ class RunningEvent(models.Model):
             return float(latitude), float(longitude)
         except:
             return None, None  # Rückgabe von None, falls die API keine Daten findet
+        
+    def get_zip_and_state_from_long_lat(self):
+        try:
+            url = f"https://nominatim.openstreetmap.org/reverse?lat={self.latitude}&lon={self.longitude}&format=json"
+            headers = {'user-agent': 'running_homepage/0.0.1'}
+            response = requests.get(url, headers=headers)
+
+            if response.ok:
+                data = response.json()
+                print("Nominatim API successful scraped state and postcode -> Wait 70s until next query ...")
+                time.sleep(70)
+                return data["address"]["state"], data["address"]["postcode"] 
+            else:
+                print("No return from nominatim API")
+                return None, None               
+        except:
+            print("No return from nominatim API")
+            return None, None
 
 
     def save(self, *args, **kwargs):
         if not self.latitude or not self.longitude:
             self.latitude, self.longitude = self.get_coordinates()
-        # if not self.state:
-        #     self.state = self.get_state_from_zip_code()
+        if not self.state or not self.postal_code:
+            self.state, self.postal_code = self.get_zip_and_state_from_long_lat()
         super().save(*args, **kwargs)
 
     
